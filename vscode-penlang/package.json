@@ -1,0 +1,51 @@
+{
+  "name": "penlang-tools",
+  "displayName": "VCL Tools",
+  "description": "Syntax highlighting, snippets, and smart completions for VCL (.vcl)",
+  "version": "0.2.0",
+  "publisher": "vexcore",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:penlang"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "penlang",
+        "aliases": [
+          "PenLang",
+          "penlang"
+        ],
+        "extensions": [
+          ".vcl"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "penlang",
+        "scopeName": "source.penlang",
+        "path": "./syntaxes/penlang.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "penlang",
+        "path": "./snippets/penlang.code-snippets"
+      }
+    ]
+  },
+  "scripts": {
+    "lint": "echo 'No linter configured'"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0"
+  }
+}

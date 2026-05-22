@@ -1,64 +1,66 @@
 # Standard Library
 
-Сейчас в проекте есть модуль `net`.
+## Встроенные функции
 
-## net.ping(host)
+### `log(value)`
+
+Печатает значение в stdout.
+
+```vcl
+log("hello");
+log(123);
+```
+
+### `run(cmd)`
+
+Выполняет shell-команду, возвращает stdout как строку.
+
+```vcl
+let out = run("echo test");
+log(out);
+```
+
+## Модуль `net`
+
+### `net.ping(host) -> bool`
 
 Проверяет доступность хоста через системный `ping`.
 
-Пример:
-
-```pen
+```vcl
 let ok = net.ping("8.8.8.8");
 log(ok);
 ```
 
-Возвращает `true` или `false`.
+### `net.port_open(host, port) -> bool`
 
-## net.port_open(host, port)
+Проверяет, открыт ли TCP-порт.
 
-Проверяет открытие TCP-порта.
-
-```pen
+```vcl
 let ssh = net.port_open("127.0.0.1", 22);
 log(ssh);
 ```
 
-## net.resolve(hostname)
+### `net.resolve(hostname) -> str | null`
 
-Возвращает IPv4-адрес по доменному имени либо `null`, если не удалось резолвить.
+Пробует резолвить DNS-имя, возвращает IP или `null`.
 
-```pen
+```vcl
 let ip = net.resolve("example.com");
 log(ip);
 ```
 
-## net.test()
+## Расширение stdlib
 
-Тестовая функция из `stdlib/net.py`.
+Архитектура сделана так, чтобы добавлять функциональность точечно.
 
-## Как добавить новый модуль
+Новый built-in:
 
-1. Создать `stdlib/<module>.py`.
-2. Описать функции.
-3. Экспортировать их через словарь `EXPORTS`.
+- добавить функцию в `crates/stdlib/src/lib.rs`
+- зарегистрировать её в `register_builtins()` (`// EXTENSION POINT`)
 
-Пример:
+Новый модуль (`http`, `fs`, ...):
 
-```python
-# stdlib/mathx.py
+- создать модуль в `crates/stdlib/src/lib.rs` или вынести в отдельный файл
+- зарегистрировать его в `register_modules()` (`// EXTENSION POINT`)
 
-def _sum(args, env):
-    return args[0] + args[1]
-
-EXPORTS = {
-    "sum": _sum,
-}
-```
-
-После этого вызов в PenLang:
-
-```pen
-let x = mathx.sum(2, 3);
-log(x);
-```
+Интерпретатор и парсер при этом менять не нужно.

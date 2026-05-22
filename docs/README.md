@@ -1,16 +1,16 @@
-# PenLang Documentation
+# Документация Vexcore
 
-Эта папка содержит подробную документацию по PenLang и инструментам вокруг него.
+Эта папка описывает актуальную Rust-версию Vexcore.
 
 ## Содержание
 
-- [01-getting-started.md](./01-getting-started.md) - быстрый старт и запуск
-- [02-language-reference.md](./02-language-reference.md) - справочник синтаксиса
-- [03-stdlib.md](./03-stdlib.md) - стандартная библиотека
-- [04-vscode-extension.md](./04-vscode-extension.md) - VS Code расширение
+- [01-getting-started.md](./01-getting-started.md) — как запустить проект и первый скрипт
+- [02-language-reference.md](./02-language-reference.md) — справочник языка
+- [03-stdlib.md](./03-stdlib.md) — `log`, `run`, `net.*`
+- [04-vscode-extension.md](./04-vscode-extension.md) — подсветка и расширение VS Code
 
-## Для кого это
+## Для кого
 
-- Пользователи языка: как писать `.vcl` скрипты
-- Контрибьюторы: как расширять синтаксис и stdlib
-- Tooling-разработчики: как развивать VS Code поддержку
+- для тех, кто пишет `.vcl`-скрипты
+- для тех, кто расширяет язык и stdlib
+- для тех, кто поддерживает tooling

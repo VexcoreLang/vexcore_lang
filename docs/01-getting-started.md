@@ -2,46 +2,81 @@
 
 ## Требования
 
-- Python 3.10+
-- Linux (из-за `ping` параметров в stdlib/net.py)
+- Rust toolchain (stable)
+- Cargo
+- ОС: Linux/macOS/Windows
 
-## Структура `.vcl` файла
+## Проверка окружения
 
-Минимальная структура:
+```bash
+rustc --version
+cargo --version
+```
 
-```pen
+## Первый запуск
+
+В корне проекта:
+
+```bash
+cargo check
+cargo run -- test.vcl
+```
+
+## Запуск REPL
+
+```bash
+cargo run -- --repl
+```
+
+Выход: `:q` или `:quit`.
+
+## Debug-режим
+
+```bash
+cargo run -- test.vcl --debug
+```
+
+Показывает техническую информацию (например, количество токенов и выражений).
+
+## Минимальный рабочий скрипт
+
+```vcl
 [setts]
 cpu=1;
 ram=1024;
 mem=0;
 
 [scenary]
-log("hello");
+let name = "vexcore";
+log(f"hello {name}");
 ```
 
-## Запуск
+## Импорт локальной библиотеки
 
-```bash
-python3 run.py test.vcl
-```
+Файл `libtest.vcl`:
 
-REPL:
-
-```bash
-python3 run.py --repl
-```
-
-Debug режим:
-
-```bash
-python3 run.py test.vcl --debug
-```
-
-## Первый практический пример
-
-```pen
+```vcl
 [scenary]
-let host: str = "8.8.8.8";
-let alive: bool = net.ping(host);
-log(f"host {host} alive = {alive}");
+fn sum(a: int, b: int): int {
+  return a + b;
+}
+```
+
+Файл `test.vcl`:
+
+```vcl
+[setts]
+cpu=1;
+ram=1024;
+mem=0;
+
+[scenary]
+use "libtest.vcl";
+log(sum(1, 2));
+```
+
+Запуск:
+
+```bash
+cargo run -- test.vcl
 ```

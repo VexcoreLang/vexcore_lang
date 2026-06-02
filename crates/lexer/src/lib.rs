@@ -57,8 +57,6 @@ pub enum TokenKind {
     Str(String),
     Ident(String),
 
-    HeaderSetts,
-    HeaderScenary,
     Eof,
     // EXTENSION POINT: add new token kinds here.
 }
@@ -116,17 +114,6 @@ impl<'a> Lexer<'a> {
             if ch == '#' {
                 self.skip_comment();
                 continue;
-            }
-
-            if ch == '[' {
-                if self.read_header("[setts]") {
-                    tokens.push(self.token(TokenKind::HeaderSetts));
-                    continue;
-                }
-                if self.read_header("[scenary]") {
-                    tokens.push(self.token(TokenKind::HeaderScenary));
-                    continue;
-                }
             }
 
             let line = self.line;
@@ -316,7 +303,9 @@ impl<'a> Lexer<'a> {
                 }
                 '\\' => {
                     self.bump();
-                    let escaped = self.peek().ok_or(LexError::UnterminatedString { line, col })?;
+                    let escaped = self
+                        .peek()
+                        .ok_or(LexError::UnterminatedString { line, col })?;
                     self.bump();
                     match escaped {
                         'n' => out.push('\n'),
@@ -399,21 +388,6 @@ impl<'a> Lexer<'a> {
             "false" => TokenKind::False,
             "null" => TokenKind::Null,
             _ => TokenKind::Ident(name),
-        }
-    }
-
-    fn read_header(&mut self, header: &str) -> bool {
-        let hchars: Vec<char> = header.chars().collect();
-        if self.idx + hchars.len() > self.chars.len() {
-            return false;
-        }
-        if self.chars[self.idx..self.idx + hchars.len()] == hchars {
-            for _ in 0..hchars.len() {
-                self.bump();
-            }
-            true
-        } else {
-            false
         }
     }
 

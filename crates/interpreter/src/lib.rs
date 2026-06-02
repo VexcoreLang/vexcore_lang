@@ -27,9 +27,18 @@ struct FunctionDef {
     body: Vec<Stmt>,
 }
 
+#[derive(Clone)]
+struct ModuleState {
+    scopes: Vec<HashMap<String, Value>>,
+    functions: HashMap<String, FunctionDef>,
+    user_modules: HashMap<String, ModuleState>,
+    base_dir: PathBuf,
+}
+
 pub struct Interpreter {
     scopes: Vec<HashMap<String, Value>>,
     functions: HashMap<String, FunctionDef>,
+    user_modules: HashMap<String, ModuleState>,
     stdlib: stdlib::Stdlib,
     base_dir: PathBuf,
 }
@@ -39,13 +48,14 @@ impl Interpreter {
         Self {
             scopes: vec![HashMap::new()],
             functions: HashMap::new(),
+            user_modules: HashMap::new(),
             stdlib: stdlib::Stdlib::new(),
             base_dir: base_dir.into(),
         }
     }
 
     pub fn execute_program(&mut self, program: &Program) -> Result<(), RuntimeError> {
-        for stmt in &program.scenary {
+        for stmt in &program.statements {
             let flow = self.eval_stmt(stmt)?;
             if matches!(flow, ControlFlow::Return(_)) {
                 return Err(RuntimeError::InvalidOperation(
@@ -89,8 +99,7 @@ impl Interpreter {
             Stmt::Expr(expr) => {
                 self.eval_expr(expr)?;
                 Ok(ControlFlow::Continue)
-            }
-            // EXTENSION POINT: add new statement evaluators in this dispatch.
+            } // EXTENSION POINT: add new statement evaluators in this dispatch.
         }
     }
 
@@ -189,7 +198,8 @@ impl Interpreter {
         };
 
         for i in s..e {
-            self.current_scope_mut().insert(var.to_string(), Value::Int(i));
+            self.current_scope_mut()
+                .insert(var.to_string(), Value::Int(i));
             if let ControlFlow::Return(v) = self.eval_block(body)? {
                 return Ok(ControlFlow::Return(v));
             }
@@ -252,16 +262,25 @@ impl Interpreter {
         let full = self.base_dir.join(path);
         let content = fs::read_to_string(&full)
             .map_err(|e| RuntimeError::ImportError(format!("{}: {e}", full.display())))?;
-        let normalized = normalize_import_source(&content);
-        let tokens = lexer::tokenize(&normalized).map_err(|e| RuntimeError::ParseError(e.to_string()))?;
+        let tokens =
+            lexer::tokenize(&content).map_err(|e| RuntimeError::ParseError(e.to_string()))?;
         let program = parser::parse(tokens).map_err(|e| RuntimeError::ParseError(e.to_string()))?;
+        let module_name = module_name_from_path(path).ok_or_else(|| {
+            RuntimeError::ImportError(format!(
+                "cannot derive module name from import path: {path}"
+            ))
+        })?;
 
         let mut child = Interpreter::new(parent_of(&full));
         child.scopes = self.scopes.clone();
         child.functions = self.functions.clone();
+        child.user_modules = self.user_modules.clone();
         child.execute_program(&program)?;
-        self.scopes = child.scopes;
-        self.functions = child.functions;
+
+        let module_state = child.into_module_state();
+        self.scopes = module_state.scopes.clone();
+        self.functions = module_state.functions.clone();
+        self.user_modules.insert(module_name, module_state);
         Ok(ControlFlow::Continue)
     }
 
@@ -330,9 +349,7 @@ impl Interpreter {
                 for arg in args {
                     evaled.push(self.eval_expr(arg)?);
                 }
-                self.stdlib
-                    .call_module(module, function, evaled)
-                    .map_err(|e| RuntimeError::ModuleError(e.to_string()))
+                self.call_module(module, function, evaled)
             }
             Expr::Index { object, index } => {
                 let obj = self.eval_expr(object)?;
@@ -344,11 +361,14 @@ impl Interpreter {
 
     fn eval_index(&self, obj: Value, idx: Value) -> Result<Value, RuntimeError> {
         match (obj, idx) {
-            (Value::List(items), Value::Int(i)) => items
-                .get(i as usize)
-                .cloned()
-                .ok_or_else(|| RuntimeError::InvalidOperation("list index out of bounds".to_string())),
-            (Value::Json(map), Value::Str(key)) => Ok(map.get(&key).cloned().unwrap_or(Value::Null)),
+            (Value::List(items), Value::Int(i)) => {
+                items.get(i as usize).cloned().ok_or_else(|| {
+                    RuntimeError::InvalidOperation("list index out of bounds".to_string())
+                })
+            }
+            (Value::Json(map), Value::Str(key)) => {
+                Ok(map.get(&key).cloned().unwrap_or(Value::Null))
+            }
             _ => Err(RuntimeError::TypeError(
                 "indexing requires list[int] or json[str]".to_string(),
             )),
@@ -391,7 +411,12 @@ impl Interpreter {
         }
     }
 
-    fn apply_binop(&self, left: &Value, op: BinaryOp, right: &Value) -> Result<Value, RuntimeError> {
+    fn apply_binop(
+        &self,
+        left: &Value,
+        op: BinaryOp,
+        right: &Value,
+    ) -> Result<Value, RuntimeError> {
         match op {
             BinaryOp::Add => match (left, right) {
                 (Value::Int(a), Value::Int(b)) => Ok(Value::Int(a + b)),
@@ -406,18 +431,24 @@ impl Interpreter {
             BinaryOp::Div => num_binop(left, right, |a, b| a / b, |a, b| a / b),
             BinaryOp::FloorDiv => match (left, right) {
                 (Value::Int(a), Value::Int(b)) => Ok(Value::Int(a / b)),
-                _ => Err(RuntimeError::TypeError("'//' expects int operands".to_string())),
+                _ => Err(RuntimeError::TypeError(
+                    "'//' expects int operands".to_string(),
+                )),
             },
             BinaryOp::Mod => match (left, right) {
                 (Value::Int(a), Value::Int(b)) => Ok(Value::Int(a % b)),
-                _ => Err(RuntimeError::TypeError("'%' expects int operands".to_string())),
+                _ => Err(RuntimeError::TypeError(
+                    "'%' expects int operands".to_string(),
+                )),
             },
             BinaryOp::Pow => match (left, right) {
                 (Value::Int(a), Value::Int(b)) => Ok(Value::Int(a.pow(*b as u32))),
                 (Value::Float(a), Value::Float(b)) => Ok(Value::Float(a.powf(*b))),
                 (Value::Int(a), Value::Float(b)) => Ok(Value::Float((*a as f64).powf(*b))),
                 (Value::Float(a), Value::Int(b)) => Ok(Value::Float(a.powf(*b as f64))),
-                _ => Err(RuntimeError::TypeError("'**' expects numeric operands".to_string())),
+                _ => Err(RuntimeError::TypeError(
+                    "'**' expects numeric operands".to_string(),
+                )),
             },
             BinaryOp::Eq => Ok(Value::Bool(value_eq(left, right))),
             BinaryOp::Ne => Ok(Value::Bool(!value_eq(left, right))),
@@ -491,6 +522,37 @@ impl Interpreter {
         }
     }
 
+    fn call_module(
+        &mut self,
+        module: &str,
+        function: &str,
+        args: Vec<Value>,
+    ) -> Result<Value, RuntimeError> {
+        if let Some(state) = self.user_modules.get(module).cloned() {
+            return self.call_user_module_function(module, function, args, state);
+        }
+
+        self.stdlib
+            .call_module(module, function, args)
+            .map_err(|e| RuntimeError::ModuleError(e.to_string()))
+    }
+
+    fn call_user_module_function(
+        &mut self,
+        module: &str,
+        function: &str,
+        args: Vec<Value>,
+        state: ModuleState,
+    ) -> Result<Value, RuntimeError> {
+        let mut child = Interpreter::from_module_state(state);
+        let result = child.call_function(function, args);
+        if result.is_ok() {
+            self.user_modules
+                .insert(module.to_string(), child.into_module_state());
+        }
+        result
+    }
+
     fn current_scope_mut(&mut self) -> &mut HashMap<String, Value> {
         self.scopes.last_mut().expect("scope stack is non-empty")
     }
@@ -513,18 +575,25 @@ impl Interpreter {
         }
         Err(RuntimeError::UndefinedVariable(name.to_string()))
     }
-}
 
-fn normalize_import_source(content: &str) -> String {
-    let trimmed = content.trim_start();
-    if trimmed.starts_with("[setts]") {
-        return content.to_string();
-    }
-    if trimmed.starts_with("[scenary]") {
-        return format!("[setts]\ncpu=1;\nram=1024;\nmem=0;\n\n{content}");
+    fn from_module_state(state: ModuleState) -> Self {
+        Self {
+            scopes: state.scopes,
+            functions: state.functions,
+            user_modules: state.user_modules,
+            stdlib: stdlib::Stdlib::new(),
+            base_dir: state.base_dir,
+        }
     }
 
-    format!("[setts]\ncpu=1;\nram=1024;\nmem=0;\n\n[scenary]\n{content}")
+    fn into_module_state(self) -> ModuleState {
+        ModuleState {
+            scopes: self.scopes,
+            functions: self.functions,
+            user_modules: self.user_modules,
+            base_dir: self.base_dir,
+        }
+    }
 }
 
 enum ControlFlow {
@@ -556,7 +625,9 @@ fn num_binop(
         (Value::Float(a), Value::Float(b)) => Ok(Value::Float(float_op(*a, *b))),
         (Value::Int(a), Value::Float(b)) => Ok(Value::Float(float_op(*a as f64, *b))),
         (Value::Float(a), Value::Int(b)) => Ok(Value::Float(float_op(*a, *b as f64))),
-        _ => Err(RuntimeError::TypeError("numeric operands required".to_string())),
+        _ => Err(RuntimeError::TypeError(
+            "numeric operands required".to_string(),
+        )),
     }
 }
 
@@ -573,5 +644,21 @@ fn cmp_binop(left: &Value, right: &Value, op: fn(f64, f64) -> bool) -> Result<Va
 }
 
 fn parent_of(path: &Path) -> PathBuf {
-    path.parent().unwrap_or_else(|| Path::new(".")).to_path_buf()
+    path.parent()
+        .unwrap_or_else(|| Path::new("."))
+        .to_path_buf()
+}
+
+fn module_name_from_path(path: &str) -> Option<String> {
+    let stem = Path::new(path).file_stem()?.to_str()?;
+    let mut chars = stem.chars();
+    let first = chars.next()?;
+    if !(first == '_' || first.is_ascii_alphabetic()) {
+        return None;
+    }
+    if chars.all(|ch| ch == '_' || ch.is_ascii_alphanumeric()) {
+        Some(stem.to_string())
+    } else {
+        None
+    }
 }

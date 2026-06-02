@@ -23,8 +23,8 @@
   ],
   "folding": {
     "markers": {
-      "start": "^\\s*\\[setts\\]|^\\s*\\[scenary\\]|\\{\\s*$",
-      "end": "^\\s*$|^\\s*\\}"
+      "start": "^\\s*\\{\\s*$",
+      "end": "^\\s*\\}"
     }
   }
 }

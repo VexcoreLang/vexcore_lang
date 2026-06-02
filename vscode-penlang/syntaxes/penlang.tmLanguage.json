@@ -4,8 +4,8 @@
   "scopeName": "source.penlang",
   "patterns": [
     { "include": "#comments" },
-    { "include": "#sections" },
     { "include": "#keywords" },
+    { "include": "#types" },
     { "include": "#booleansAndNull" },
     { "include": "#numbers" },
     { "include": "#fstrings" },
@@ -23,19 +23,19 @@
         }
       ]
     },
-    "sections": {
-      "patterns": [
-        {
-          "name": "entity.name.section.penlang",
-          "match": "\\[(setts|scenary)\\]"
-        }
-      ]
-    },
     "keywords": {
       "patterns": [
         {
           "name": "keyword.control.penlang",
           "match": "\\b(let|if|elf|els|while|for|in|run|log|fn|return|use)\\b"
+        }
+      ]
+    },
+    "types": {
+      "patterns": [
+        {
+          "name": "support.type.penlang",
+          "match": "\\b(int|float|str|bool|null|list|json)\\b"
         }
       ]
     },

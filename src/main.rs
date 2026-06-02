@@ -3,7 +3,11 @@ use std::fs;
 use std::path::PathBuf;
 
 #[derive(Debug, Parser)]
-#[command(name = "vexcore", version, about = "Vexcore scripting language runtime")]
+#[command(
+    name = "vexcore",
+    version,
+    about = "Vexcore scripting language runtime"
+)]
 struct Cli {
     script: Option<PathBuf>,
     #[arg(long)]
@@ -57,7 +61,7 @@ fn main() {
     };
 
     if cli.debug {
-        eprintln!("[debug] scenary statements: {}", program.scenary.len());
+        eprintln!("[debug] statements: {}", program.statements.len());
     }
 
     let base_dir = script_path

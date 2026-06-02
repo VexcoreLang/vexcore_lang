@@ -8,6 +8,7 @@
 - [02-language-reference.md](./02-language-reference.md) — справочник языка
 - [03-stdlib.md](./03-stdlib.md) — `log`, `run`, `net.*`
 - [04-vscode-extension.md](./04-vscode-extension.md) — подсветка и расширение VS Code
+- [05-extending-language.md](./05-extending-language.md) — как добавлять keyword, типы и новые конструкции
 
 ## Для кого
 

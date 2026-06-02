@@ -31,14 +31,19 @@ impl Stdlib {
         func(args)
     }
 
-    pub fn call_module(&self, module: &str, func: &str, args: Vec<Value>) -> Result<Value, StdlibError> {
+    pub fn call_module(
+        &self,
+        module: &str,
+        func: &str,
+        args: Vec<Value>,
+    ) -> Result<Value, StdlibError> {
         let module_map = self
             .modules
             .get(module)
             .ok_or_else(|| StdlibError::Message(format!("Unknown module: {module}")))?;
-        let f = module_map
-            .get(func)
-            .ok_or_else(|| StdlibError::Message(format!("Unknown module function: {module}.{func}")))?;
+        let f = module_map.get(func).ok_or_else(|| {
+            StdlibError::Message(format!("Unknown module function: {module}.{func}"))
+        })?;
         f(args)
     }
 }
@@ -89,6 +94,7 @@ fn register_modules() -> HashMap<String, HashMap<String, ModuleFn>> {
     let mut modules: HashMap<String, HashMap<String, ModuleFn>> = HashMap::new();
     // EXTENSION POINT: register new stdlib modules in this single registry.
     modules.insert("net".to_string(), net::register());
+    modules.insert("udp".to_string(), udp::register());
     modules
 }
 
@@ -189,5 +195,22 @@ mod net {
             Some(ip) => Value::Str(ip),
             None => Value::Null,
         })
+    }
+}
+
+mod udp {
+    use super::{ModuleFn, StdlibError};
+    use ast::Value;
+    use std::collections::HashMap;
+
+    pub fn register() -> HashMap<String, ModuleFn> {
+        let mut map: HashMap<String, ModuleFn> = HashMap::new();
+        map.insert("test".to_string(), test as ModuleFn);
+        map
+    }
+
+    fn test(_args: Vec<Value>) -> Result<Value, StdlibError> {
+        println!("HEllo udp");
+        Ok(Value::Bool(true))
     }
 }

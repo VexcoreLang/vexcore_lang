@@ -109,15 +109,7 @@ impl Value {
 
 #[derive(Debug, Clone)]
 pub struct Program {
-    pub settings: Settings,
-    pub scenary: Vec<Stmt>,
-}
-
-#[derive(Debug, Clone, Default)]
-pub struct Settings {
-    pub cpu: Option<i64>,
-    pub ram: Option<i64>,
-    pub mem: Option<i64>,
+    pub statements: Vec<Stmt>,
 }
 
 #[derive(Debug, Clone)]

@@ -1,4 +1,4 @@
-use ast::{AssignOp, BinaryOp, Expr, Param, Program, Settings, Stmt, TypeAnnotation, UnaryOp, Value};
+use ast::{AssignOp, BinaryOp, Expr, Param, Program, Stmt, TypeAnnotation, UnaryOp, Value};
 use lexer::{Token, TokenKind};
 use thiserror::Error;
 
@@ -36,56 +36,11 @@ impl Parser {
     }
 
     fn parse_program(&mut self) -> Result<Program, ParseError> {
-        self.expect_header(TokenKind::HeaderSetts, "[setts]")?;
-        let settings = self.parse_settings()?;
-        self.expect_header(TokenKind::HeaderScenary, "[scenary]")?;
-        let mut scenary = Vec::new();
+        let mut statements = Vec::new();
         while !self.is_eof() {
-            scenary.push(self.parse_stmt()?);
+            statements.push(self.parse_stmt()?);
         }
-        Ok(Program { settings, scenary })
-    }
-
-    fn parse_settings(&mut self) -> Result<Settings, ParseError> {
-        let mut settings = Settings::default();
-        loop {
-            match &self.peek().kind {
-                TokenKind::HeaderScenary | TokenKind::Eof => break,
-                TokenKind::Ident(name) => {
-                    let key = name.clone();
-                    self.advance();
-                    self.expect(TokenKind::Assign, "=")?;
-                    let tok = self.advance().clone();
-                    let value = match tok.kind {
-                        TokenKind::Int(v) => v,
-                        tk => {
-                            return Err(ParseError::Expected {
-                                expected: "int".to_string(),
-                                found: token_name(&tk),
-                                line: tok.line,
-                                col: tok.col,
-                            });
-                        }
-                    };
-                    self.expect(TokenKind::Semicolon, ";")?;
-                    match key.as_str() {
-                        "cpu" => settings.cpu = Some(value),
-                        "ram" => settings.ram = Some(value),
-                        "mem" => settings.mem = Some(value),
-                        _ => {}
-                    }
-                }
-                _ => {
-                    let t = self.peek();
-                    return Err(ParseError::UnexpectedToken {
-                        found: token_name(&t.kind),
-                        line: t.line,
-                        col: t.col,
-                    });
-                }
-            }
-        }
-        Ok(settings)
+        Ok(Program { statements })
     }
 
     fn parse_stmt(&mut self) -> Result<Stmt, ParseError> {
@@ -589,21 +544,6 @@ impl Parser {
             "list" => Ok(TypeAnnotation::List),
             "json" => Ok(TypeAnnotation::Json),
             _ => Err(ParseError::InvalidType(ident)),
-        }
-    }
-
-    fn expect_header(&mut self, kind: TokenKind, text: &str) -> Result<(), ParseError> {
-        if self.check(&kind) {
-            self.advance();
-            Ok(())
-        } else {
-            let t = self.peek();
-            Err(ParseError::Expected {
-                expected: text.to_string(),
-                found: token_name(&t.kind),
-                line: t.line,
-                col: t.col,
-            })
         }
     }
 

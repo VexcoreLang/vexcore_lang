@@ -41,12 +41,6 @@ cargo run -- test.vcl --debug
 ## Минимальный рабочий скрипт
 
 ```vcl
-[setts]
-cpu=1;
-ram=1024;
-mem=0;
-
-[scenary]
 let name = "vexcore";
 log(f"hello {name}");
 ```
@@ -56,7 +50,6 @@ log(f"hello {name}");
 Файл `libtest.vcl`:
 
 ```vcl
-[scenary]
 fn sum(a: int, b: int): int {
   return a + b;
 }
@@ -65,12 +58,6 @@ fn sum(a: int, b: int): int {
 Файл `test.vcl`:
 
 ```vcl
-[setts]
-cpu=1;
-ram=1024;
-mem=0;
-
-[scenary]
 use "libtest.vcl";
 log(sum(1, 2));
 ```

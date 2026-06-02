@@ -21,12 +21,6 @@ cargo run -- test.vcl --debug
 ## Минимальный `.vcl` файл
 
 ```vcl
-[setts]
-cpu=1;
-ram=1024;
-mem=0;
-
-[scenary]
 log("hello");
 ```
 
@@ -43,12 +37,6 @@ log("hello");
 ## Пример
 
 ```vcl
-[setts]
-cpu=1;
-ram=1024;
-mem=0;
-
-[scenary]
 use "libtest.vcl";
 
 let host = "8.8.8.8";
@@ -64,6 +52,7 @@ log(sum(1, 2));
 - [docs/02-language-reference.md](docs/02-language-reference.md) — синтаксис и семантика
 - [docs/03-stdlib.md](docs/03-stdlib.md) — встроенные функции и `net`
 - [docs/04-vscode-extension.md](docs/04-vscode-extension.md) — работа с VS Code
+- [docs/05-extending-language.md](docs/05-extending-language.md) — как расширять язык
 
 ## Лицензия
 

@@ -19,14 +19,14 @@ pub fn run_repl(debug: bool) -> Result<(), Box<dyn std::error::Error>> {
                     break;
                 }
 
-                let wrapped = format!("[setts]\ncpu=1;\nram=1024;\nmem=0;\n\n[scenary]\n{}", ensure_semi(trimmed));
+                let wrapped = ensure_semi(trimmed);
                 match lexer::tokenize(&wrapped)
                     .map_err(|e| e.to_string())
                     .and_then(|t| parser::parse(t).map_err(|e| e.to_string()))
                 {
                     Ok(program) => {
                         if debug {
-                            println!("[debug] parsed {} statement(s)", program.scenary.len());
+                            println!("[debug] parsed {} statement(s)", program.statements.len());
                         }
                         if let Err(e) = interp.execute_program(&program) {
                             eprintln!("Runtime error: {e}");

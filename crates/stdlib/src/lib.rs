@@ -1,5 +1,6 @@
 use ast::Value;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 pub type BuiltinFn = fn(Vec<Value>) -> Result<Value, StdlibError>;
 pub type ModuleFn = fn(Vec<Value>) -> Result<Value, StdlibError>;
@@ -48,7 +49,16 @@ impl Stdlib {
     }
 }
 
-fn builtin_log(args: Vec<Value>) -> Result<Value, StdlibError> {
+fn builtin_out(args: Vec<Value>) -> Result<Value, StdlibError> {
+    if let Some(v) = args.first() {
+        print!("{}", v.to_pretty_string());
+    } else {
+        print!("");
+    }
+    Ok(Value::Null)
+}
+
+fn builtin_outln(args: Vec<Value>) -> Result<Value, StdlibError> {
     if let Some(v) = args.first() {
         println!("{}", v.to_pretty_string());
     } else {
@@ -70,22 +80,24 @@ fn builtin_run(args: Vec<Value>) -> Result<Value, StdlibError> {
     let output = if cfg!(target_os = "windows") {
         std::process::Command::new("cmd")
             .arg("/C")
-            .arg(cmd)
+            .arg(cmd.as_ref())
             .output()
     } else {
-        std::process::Command::new("sh").arg("-c").arg(cmd).output()
+        std::process::Command::new("sh").arg("-c").arg(cmd.as_ref()).output()
     }
     .map_err(|e| StdlibError::Message(format!("run failed: {e}")))?;
 
-    Ok(Value::Str(
+    Ok(Value::Str(Arc::from(
         String::from_utf8_lossy(&output.stdout).trim().to_string(),
-    ))
+    )))
 }
 
 fn register_builtins() -> HashMap<String, BuiltinFn> {
     let mut map: HashMap<String, BuiltinFn> = HashMap::new();
     // EXTENSION POINT: add new built-in functions in this single registry.
-    map.insert("log".to_string(), builtin_log as BuiltinFn);
+    map.insert("out".to_string(), builtin_out as BuiltinFn);
+    map.insert("outln".to_string(), builtin_outln as BuiltinFn);
+    map.insert("log".to_string(), builtin_outln as BuiltinFn);
     map.insert("run".to_string(), builtin_run as BuiltinFn);
     map
 }
@@ -103,6 +115,7 @@ mod net {
     use ast::Value;
     use std::collections::HashMap;
     use std::net::{TcpStream, ToSocketAddrs};
+    use std::sync::Arc;
     use std::time::Duration;
 
     pub fn register() -> HashMap<String, ModuleFn> {
@@ -127,13 +140,13 @@ mod net {
             std::process::Command::new("ping")
                 .arg("-n")
                 .arg("1")
-                .arg(host)
+                .arg(host.as_ref())
                 .output()
         } else {
             std::process::Command::new("ping")
                 .arg("-c")
                 .arg("1")
-                .arg(host)
+                .arg(host.as_ref())
                 .output()
         }
         .map_err(|e| StdlibError::Message(format!("ping failed: {e}")))?;
@@ -192,7 +205,7 @@ mod net {
             .map(|a| a.ip().to_string());
 
         Ok(match first {
-            Some(ip) => Value::Str(ip),
+            Some(ip) => Value::Str(Arc::from(ip)),
             None => Value::Null,
         })
     }

@@ -1,5 +1,6 @@
 use ast::{AssignOp, BinaryOp, Expr, Param, Program, Stmt, TypeAnnotation, UnaryOp, Value};
 use lexer::{Token, TokenKind};
+use std::sync::Arc;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -473,7 +474,7 @@ impl Parser {
                 if s.contains('{') && s.contains('}') {
                     Ok(Expr::InterpolatedString(s))
                 } else {
-                    Ok(Expr::Value(Value::Str(s)))
+                    Ok(Expr::Value(Value::Str(Arc::from(s))))
                 }
             }
             TokenKind::True => Ok(Expr::Value(Value::Bool(true))),

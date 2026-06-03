@@ -6,17 +6,17 @@ mem=0;
 [scenary]
 let host = "8.8.8.8";
 let alive = net.ping(host);
-log(f"host {host} alive = {alive}");
+outln(f"host {host} alive = {alive}");
 
 let numbers = [1, 2, 3];
 for (i in 1..4) {
-  log(f"i = {i}");
+  outln(f"i = {i}");
 }
 
 let open = net.port_open("127.0.0.1", 22);
-log(f"ssh open = {open}");
+outln(f"ssh open = {open}");
 
 let resolved = net.resolve("example.com");
-log(f"resolved = {resolved}");
+outln(f"resolved = {resolved}");
 
-log(run("echo vexcore"));
+outln(run("echo vexcore"));

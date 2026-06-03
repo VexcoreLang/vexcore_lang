@@ -6,7 +6,7 @@
 
 ```vcl
 let name = "vexcore";
-log(f"hello {name}");
+outln(f"hello {name}");
 ```
 
 Поддерживаются:
@@ -86,11 +86,11 @@ let mark: str = 404;
 
 ```vcl
 if (x > 0) {
-  log("positive");
+  outln("positive");
 } elf (x == 0) {
-  log("zero");
+  outln("zero");
 } els {
-  log("negative");
+  outln("negative");
 }
 
 while (x < 3) {
@@ -98,11 +98,11 @@ while (x < 3) {
 }
 
 for (i in 1..4) {
-  log(i);
+  outln(i);
 }
 
 for (item in arr) {
-  log(item);
+  outln(item);
 }
 ```
 
@@ -114,7 +114,7 @@ fn sum(a: int, b: int): int {
 }
 
 let result = sum(5, 7);
-log(result);
+outln(result);
 ```
 
 `return;` без значения возвращает `null`.
@@ -123,7 +123,7 @@ log(result);
 
 ```vcl
 let data = {"key": [1, 2, 3]};
-log(data["key"][0]);
+outln(data["key"][0]);
 ```
 
 ## Интерполяция строк
@@ -131,7 +131,7 @@ log(data["key"][0]);
 ```vcl
 let host = "8.8.8.8";
 let alive = net.ping(host);
-log(f"host {host} alive = {alive}");
+outln(f"host {host} alive = {alive}");
 ```
 
 ## Импорты

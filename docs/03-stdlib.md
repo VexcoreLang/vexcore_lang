@@ -2,13 +2,23 @@
 
 ## Встроенные функции
 
-### `log(value)`
+### `out(value)`
 
-Печатает значение в stdout.
+Печатает значение в stdout без перевода строки.
 
 ```vcl
-log("hello");
-log(123);
+out("hello");
+out(123);
+outln();
+```
+
+### `outln(value)`
+
+Печатает значение в stdout с переводом строки.
+
+```vcl
+outln("hello");
+outln(123);
 ```
 
 ### `run(cmd)`
@@ -17,7 +27,7 @@ log(123);
 
 ```vcl
 let out = run("echo test");
-log(out);
+outln(out);
 ```
 
 ## Модуль `net`
@@ -28,7 +38,7 @@ log(out);
 
 ```vcl
 let ok = net.ping("8.8.8.8");
-log(ok);
+outln(ok);
 ```
 
 ### `net.port_open(host, port) -> bool`
@@ -37,7 +47,7 @@ log(ok);
 
 ```vcl
 let ssh = net.port_open("127.0.0.1", 22);
-log(ssh);
+outln(ssh);
 ```
 
 ### `net.resolve(hostname) -> str | null`
@@ -46,7 +56,7 @@ log(ssh);
 
 ```vcl
 let ip = net.resolve("example.com");
-log(ip);
+outln(ip);
 ```
 
 ## Расширение stdlib

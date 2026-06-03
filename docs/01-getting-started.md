@@ -42,7 +42,7 @@ cargo run -- test.vcl --debug
 
 ```vcl
 let name = "vexcore";
-log(f"hello {name}");
+outln(f"hello {name}");
 ```
 
 ## Импорт локальной библиотеки
@@ -59,7 +59,7 @@ fn sum(a: int, b: int): int {
 
 ```vcl
 use "libtest.vcl";
-log(sum(1, 2));
+outln(sum(1, 2));
 ```
 
 Запуск:

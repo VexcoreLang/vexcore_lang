@@ -84,21 +84,21 @@ pub fn tokenize(input: &str) -> Result<Vec<Token>, LexError> {
 }
 
 struct Lexer<'a> {
-    chars: Vec<char>,
+    raw: &'a str,
+    bytes: &'a [u8],
     idx: usize,
     line: usize,
     col: usize,
-    _raw: &'a str,
 }
 
 impl<'a> Lexer<'a> {
     fn new(raw: &'a str) -> Self {
         Self {
-            chars: raw.chars().collect(),
+            raw,
+            bytes: raw.as_bytes(),
             idx: 0,
             line: 1,
             col: 1,
-            _raw: raw,
         }
     }
 
@@ -106,12 +106,12 @@ impl<'a> Lexer<'a> {
         let mut tokens = Vec::new();
 
         while let Some(ch) = self.peek() {
-            if ch.is_whitespace() {
+            if ch.is_ascii_whitespace() {
                 self.bump();
                 continue;
             }
 
-            if ch == '#' {
+            if ch == b'#' {
                 self.skip_comment();
                 continue;
             }
@@ -120,44 +120,44 @@ impl<'a> Lexer<'a> {
             let col = self.col;
 
             let tk = match ch {
-                '(' => {
+                b'(' => {
                     self.bump();
                     TokenKind::LParen
                 }
-                ')' => {
+                b')' => {
                     self.bump();
                     TokenKind::RParen
                 }
-                '{' => {
+                b'{' => {
                     self.bump();
                     TokenKind::LBrace
                 }
-                '}' => {
+                b'}' => {
                     self.bump();
                     TokenKind::RBrace
                 }
-                '[' => {
+                b'[' => {
                     self.bump();
                     TokenKind::LBracket
                 }
-                ']' => {
+                b']' => {
                     self.bump();
                     TokenKind::RBracket
                 }
-                ',' => {
+                b',' => {
                     self.bump();
                     TokenKind::Comma
                 }
-                ':' => {
+                b':' => {
                     self.bump();
                     TokenKind::Colon
                 }
-                ';' => {
+                b';' => {
                     self.bump();
                     TokenKind::Semicolon
                 }
-                '.' => {
-                    if self.peek2() == Some('.') {
+                b'.' => {
+                    if self.peek2() == Some(b'.') {
                         self.bump();
                         self.bump();
                         TokenKind::Range
@@ -166,115 +166,127 @@ impl<'a> Lexer<'a> {
                         TokenKind::Dot
                     }
                 }
-                '+' => {
+                b'+' => {
                     self.bump();
-                    if self.peek() == Some('=') {
+                    if self.peek() == Some(b'=') {
                         self.bump();
                         TokenKind::PlusAssign
                     } else {
                         TokenKind::Plus
                     }
                 }
-                '-' => {
+                b'-' => {
                     self.bump();
-                    if self.peek() == Some('=') {
+                    if self.peek() == Some(b'=') {
                         self.bump();
                         TokenKind::MinusAssign
                     } else {
                         TokenKind::Minus
                     }
                 }
-                '*' => {
+                b'*' => {
                     self.bump();
-                    if self.peek() == Some('*') {
+                    if self.peek() == Some(b'*') {
                         self.bump();
                         TokenKind::Pow
-                    } else if self.peek() == Some('=') {
+                    } else if self.peek() == Some(b'=') {
                         self.bump();
                         TokenKind::StarAssign
                     } else {
                         TokenKind::Star
                     }
                 }
-                '/' => {
+                b'/' => {
                     self.bump();
-                    if self.peek() == Some('/') {
+                    if self.peek() == Some(b'/') {
                         self.bump();
                         TokenKind::FloorDiv
-                    } else if self.peek() == Some('=') {
+                    } else if self.peek() == Some(b'=') {
                         self.bump();
                         TokenKind::SlashAssign
                     } else {
                         TokenKind::Slash
                     }
                 }
-                '%' => {
+                b'%' => {
                     self.bump();
                     TokenKind::Percent
                 }
-                '=' => {
+                b'=' => {
                     self.bump();
-                    if self.peek() == Some('=') {
+                    if self.peek() == Some(b'=') {
                         self.bump();
                         TokenKind::EqEq
                     } else {
                         TokenKind::Assign
                     }
                 }
-                '!' => {
+                b'!' => {
                     self.bump();
-                    if self.peek() == Some('=') {
+                    if self.peek() == Some(b'=') {
                         self.bump();
                         TokenKind::NotEq
                     } else {
                         TokenKind::Not
                     }
                 }
-                '<' => {
+                b'<' => {
                     self.bump();
-                    if self.peek() == Some('=') {
+                    if self.peek() == Some(b'=') {
                         self.bump();
                         TokenKind::Le
                     } else {
                         TokenKind::Lt
                     }
                 }
-                '>' => {
+                b'>' => {
                     self.bump();
-                    if self.peek() == Some('=') {
+                    if self.peek() == Some(b'=') {
                         self.bump();
                         TokenKind::Ge
                     } else {
                         TokenKind::Gt
                     }
                 }
-                '&' => {
+                b'&' => {
                     self.bump();
-                    if self.peek() == Some('&') {
+                    if self.peek() == Some(b'&') {
                         self.bump();
                         TokenKind::AndAnd
                     } else {
-                        return Err(LexError::UnexpectedChar { ch: '&', line, col });
+                        return Err(LexError::UnexpectedChar {
+                            ch: '&',
+                            line,
+                            col,
+                        });
                     }
                 }
-                '|' => {
+                b'|' => {
                     self.bump();
-                    if self.peek() == Some('|') {
+                    if self.peek() == Some(b'|') {
                         self.bump();
                         TokenKind::OrOr
                     } else {
-                        return Err(LexError::UnexpectedChar { ch: '|', line, col });
+                        return Err(LexError::UnexpectedChar {
+                            ch: '|',
+                            line,
+                            col,
+                        });
                     }
                 }
-                '"' => self.lex_string()?,
-                'f' if self.peek2() == Some('"') => {
+                b'"' => self.lex_string()?,
+                b'f' if self.peek2() == Some(b'"') => {
                     self.bump();
                     self.lex_string()?
                 }
-                ch if ch.is_ascii_digit() => self.lex_number()?,
-                ch if is_ident_start(ch) => self.lex_ident_or_kw(),
+                b if b.is_ascii_digit() => self.lex_number()?,
+                b if is_ident_start(b) => self.lex_ident_or_kw(),
                 _ => {
-                    return Err(LexError::UnexpectedChar { ch, line, col });
+                    return Err(LexError::UnexpectedChar {
+                        ch: ch as char,
+                        line,
+                        col,
+                    });
                 }
             };
 
@@ -297,28 +309,33 @@ impl<'a> Lexer<'a> {
 
         while let Some(ch) = self.peek() {
             match ch {
-                '"' => {
+                b'"' => {
                     self.bump();
                     return Ok(TokenKind::Str(out));
                 }
-                '\\' => {
+                b'\\' => {
                     self.bump();
-                    let escaped = self
-                        .peek()
-                        .ok_or(LexError::UnterminatedString { line, col })?;
+                    let escaped = self.peek().ok_or(LexError::UnterminatedString { line, col })?;
                     self.bump();
                     match escaped {
-                        'n' => out.push('\n'),
-                        't' => out.push('\t'),
-                        'r' => out.push('\r'),
-                        '"' => out.push('"'),
-                        '\\' => out.push('\\'),
-                        other => out.push(other),
+                        b'n' => out.push('\n'),
+                        b't' => out.push('\t'),
+                        b'r' => out.push('\r'),
+                        b'"' => out.push('"'),
+                        b'\\' => out.push('\\'),
+                        other if other.is_ascii() => out.push(other as char),
+                        other => out.push(other as char),
                     }
                 }
-                _ => {
-                    out.push(ch);
+                b if b.is_ascii() => {
+                    out.push(b as char);
                     self.bump();
+                }
+                _ => {
+                    let s = &self.raw[self.idx..];
+                    let ch = s.chars().next().ok_or(LexError::UnterminatedString { line, col })?;
+                    self.bump_bytes(ch.len_utf8());
+                    out.push(ch);
                 }
             }
         }
@@ -329,51 +346,51 @@ impl<'a> Lexer<'a> {
     fn lex_number(&mut self) -> Result<TokenKind, LexError> {
         let line = self.line;
         let col = self.col;
-        let mut num = String::new();
+        let start = self.idx;
         let mut dot_count = 0usize;
 
         while let Some(ch) = self.peek() {
             if ch.is_ascii_digit() {
-                num.push(ch);
                 self.bump();
-            } else if ch == '.' {
-                if self.peek2() == Some('.') {
+            } else if ch == b'.' {
+                if self.peek2() == Some(b'.') {
                     break;
                 }
                 dot_count += 1;
                 if dot_count > 1 {
                     return Err(LexError::InvalidNumber { line, col });
                 }
-                num.push(ch);
                 self.bump();
             } else {
                 break;
             }
         }
 
+        let text = &self.raw[start..self.idx];
         if dot_count == 1 {
-            num.parse::<f64>()
+            text.parse::<f64>()
                 .map(TokenKind::Float)
                 .map_err(|_| LexError::InvalidNumber { line, col })
         } else {
-            num.parse::<i64>()
+            text.parse::<i64>()
                 .map(TokenKind::Int)
                 .map_err(|_| LexError::InvalidNumber { line, col })
         }
     }
 
     fn lex_ident_or_kw(&mut self) -> TokenKind {
-        let mut name = String::new();
+        let start = self.idx;
+        self.bump();
         while let Some(ch) = self.peek() {
             if is_ident_continue(ch) {
-                name.push(ch);
                 self.bump();
             } else {
                 break;
             }
         }
 
-        match name.as_str() {
+        let name = &self.raw[start..self.idx];
+        match name {
             "let" => TokenKind::Let,
             "if" => TokenKind::If,
             "elf" => TokenKind::Elf,
@@ -387,36 +404,42 @@ impl<'a> Lexer<'a> {
             "true" => TokenKind::True,
             "false" => TokenKind::False,
             "null" => TokenKind::Null,
-            _ => TokenKind::Ident(name),
+            _ => TokenKind::Ident(name.to_string()),
         }
     }
 
     fn skip_comment(&mut self) {
         while let Some(ch) = self.peek() {
             self.bump();
-            if ch == '\n' {
+            if ch == b'\n' {
                 break;
             }
         }
     }
 
-    fn peek(&self) -> Option<char> {
-        self.chars.get(self.idx).copied()
+    fn peek(&self) -> Option<u8> {
+        self.bytes.get(self.idx).copied()
     }
 
-    fn peek2(&self) -> Option<char> {
-        self.chars.get(self.idx + 1).copied()
+    fn peek2(&self) -> Option<u8> {
+        self.bytes.get(self.idx + 1).copied()
     }
 
     fn bump(&mut self) {
-        if let Some(ch) = self.chars.get(self.idx).copied() {
+        if let Some(ch) = self.peek() {
             self.idx += 1;
-            if ch == '\n' {
+            if ch == b'\n' {
                 self.line += 1;
                 self.col = 1;
             } else {
                 self.col += 1;
             }
+        }
+    }
+
+    fn bump_bytes(&mut self, count: usize) {
+        for _ in 0..count {
+            self.bump();
         }
     }
 
@@ -429,10 +452,10 @@ impl<'a> Lexer<'a> {
     }
 }
 
-fn is_ident_start(ch: char) -> bool {
-    ch == '_' || ch.is_ascii_alphabetic()
+fn is_ident_start(ch: u8) -> bool {
+    ch == b'_' || ch.is_ascii_alphabetic()
 }
 
-fn is_ident_continue(ch: char) -> bool {
-    ch == '_' || ch.is_ascii_alphanumeric()
+fn is_ident_continue(ch: u8) -> bool {
+    ch == b'_' || ch.is_ascii_alphanumeric()
 }

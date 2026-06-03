@@ -2,7 +2,7 @@
   "name": "penlang-tools",
   "displayName": "VCL Tools",
   "description": "Syntax highlighting, snippets, and smart completions for VCL (.vcl)",
-  "version": "0.2.3",
+  "version": "0.2.31",
   "publisher": "vexcore",
   "engines": {
     "vscode": "^1.85.0"

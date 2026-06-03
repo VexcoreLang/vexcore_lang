@@ -1,1 +1,1 @@
-udp.test();
+outln("Hello, World!");

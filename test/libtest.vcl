@@ -2,6 +2,6 @@ fn sum(a: int, b: int): int {
     return a + b;
 }
 fn test() {
-    log("Hello");
+    outln("Hello");
 }
 let libName: str = "ok";

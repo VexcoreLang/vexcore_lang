@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+use std::sync::Arc;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TypeAnnotation {
@@ -16,11 +17,11 @@ pub enum TypeAnnotation {
 pub enum Value {
     Int(i64),
     Float(f64),
-    Str(String),
+    Str(Arc<str>),
     Bool(bool),
     Null,
-    List(Vec<Value>),
-    Json(BTreeMap<String, Value>),
+    List(Arc<[Value]>),
+    Json(Arc<BTreeMap<String, Value>>),
 }
 
 impl Value {
@@ -60,7 +61,7 @@ impl Value {
                     v.to_string()
                 }
             }
-            Value::Str(v) => v.clone(),
+            Value::Str(v) => v.to_string(),
             Value::Bool(v) => v.to_string(),
             Value::Null => "null".to_string(),
             Value::List(values) => {
@@ -71,7 +72,9 @@ impl Value {
                     .join(", ");
                 format!("[{inner}]")
             }
-            Value::Json(map) => serde_json::to_string(map).unwrap_or_else(|_| "{}".to_string()),
+            Value::Json(map) => {
+                serde_json::to_string(map.as_ref()).unwrap_or_else(|_| "{}".to_string())
+            }
             // EXTENSION POINT: add stringification for new Value variants here.
         }
     }
@@ -92,7 +95,7 @@ impl Value {
                 Value::Bool(b) => Some(Value::Float(if *b { 1.0 } else { 0.0 })),
                 _ => None,
             },
-            TypeAnnotation::Str => Some(Value::Str(self.to_pretty_string())),
+            TypeAnnotation::Str => Some(Value::Str(self.to_pretty_string().into())),
             TypeAnnotation::Bool => Some(Value::Bool(self.is_truthy())),
             TypeAnnotation::Null => Some(Value::Null),
             TypeAnnotation::List => match self {

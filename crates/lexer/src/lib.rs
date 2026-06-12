@@ -48,6 +48,7 @@ pub enum TokenKind {
     Fn,
     Return,
     Use,
+    As,
     True,
     False,
     Null,
@@ -254,11 +255,7 @@ impl<'a> Lexer<'a> {
                         self.bump();
                         TokenKind::AndAnd
                     } else {
-                        return Err(LexError::UnexpectedChar {
-                            ch: '&',
-                            line,
-                            col,
-                        });
+                        return Err(LexError::UnexpectedChar { ch: '&', line, col });
                     }
                 }
                 b'|' => {
@@ -267,11 +264,7 @@ impl<'a> Lexer<'a> {
                         self.bump();
                         TokenKind::OrOr
                     } else {
-                        return Err(LexError::UnexpectedChar {
-                            ch: '|',
-                            line,
-                            col,
-                        });
+                        return Err(LexError::UnexpectedChar { ch: '|', line, col });
                     }
                 }
                 b'"' => self.lex_string()?,
@@ -315,7 +308,9 @@ impl<'a> Lexer<'a> {
                 }
                 b'\\' => {
                     self.bump();
-                    let escaped = self.peek().ok_or(LexError::UnterminatedString { line, col })?;
+                    let escaped = self
+                        .peek()
+                        .ok_or(LexError::UnterminatedString { line, col })?;
                     self.bump();
                     match escaped {
                         b'n' => out.push('\n'),
@@ -333,7 +328,10 @@ impl<'a> Lexer<'a> {
                 }
                 _ => {
                     let s = &self.raw[self.idx..];
-                    let ch = s.chars().next().ok_or(LexError::UnterminatedString { line, col })?;
+                    let ch = s
+                        .chars()
+                        .next()
+                        .ok_or(LexError::UnterminatedString { line, col })?;
                     self.bump_bytes(ch.len_utf8());
                     out.push(ch);
                 }
@@ -401,6 +399,7 @@ impl<'a> Lexer<'a> {
             "fn" => TokenKind::Fn,
             "return" => TokenKind::Return,
             "use" => TokenKind::Use,
+            "as" => TokenKind::As,
             "true" => TokenKind::True,
             "false" => TokenKind::False,
             "null" => TokenKind::Null,

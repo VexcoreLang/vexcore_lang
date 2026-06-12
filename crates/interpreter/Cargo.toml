@@ -9,3 +9,5 @@ lexer = { path = "../lexer" }
 parser = { path = "../parser" }
 stdlib = { path = "../stdlib" }
 thiserror.workspace = true
+serde.workspace = true
+serde_json.workspace = true

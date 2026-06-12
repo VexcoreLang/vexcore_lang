@@ -203,8 +203,15 @@ impl Parser {
                 });
             }
         };
+
+        let namespace = if self.matches(&TokenKind::As) {
+            Some(self.expect_ident()?)
+        } else {
+            None
+        };
+
         self.expect(TokenKind::Semicolon, ";")?;
-        Ok(Stmt::Use(path))
+        Ok(Stmt::Use { path, namespace })
     }
 
     fn parse_expr_or_assign_stmt(&mut self) -> Result<Stmt, ParseError> {
@@ -427,7 +434,13 @@ impl Parser {
                 }
                 self.expect(TokenKind::RParen, ")")?;
                 expr = if let Expr::Var(name) = &expr {
-                    if let Some((module, function)) = split_module_call(name) {
+                    if let Some((module, function)) = split_std_module_call(name) {
+                        Expr::StdModuleCall {
+                            module,
+                            function,
+                            args,
+                        }
+                    } else if let Some((module, function)) = split_module_call(name) {
                         Expr::ModuleCall {
                             module,
                             function,
@@ -616,6 +629,21 @@ fn split_module_call(name: &str) -> Option<(String, String)> {
     let b = parts.next()?;
     if parts.next().is_none() {
         Some((a.to_string(), b.to_string()))
+    } else {
+        None
+    }
+}
+
+fn split_std_module_call(name: &str) -> Option<(String, String)> {
+    let mut parts = name.split('.');
+    let first = parts.next()?;
+    if first != "std" {
+        return None;
+    }
+    let module = parts.next()?;
+    let function = parts.next()?;
+    if parts.next().is_none() {
+        Some((module.to_string(), function.to_string()))
     } else {
         None
     }

@@ -182,6 +182,8 @@ dependencies = [
  "ast",
  "lexer",
  "parser",
+ "serde",
+ "serde_json",
  "stdlib",
  "thiserror",
 ]

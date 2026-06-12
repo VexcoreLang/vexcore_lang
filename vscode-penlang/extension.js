@@ -6,12 +6,22 @@ const BUILTIN_SYMBOLS = {
   log: {
     label: 'log(value: any): null',
     detail: 'Built-in function',
-    documentation: 'Prints a value to the output. If no argument is passed, it prints a blank line.'
+    documentation: 'Prints a value to stdout with a newline.'
+  },
+  out: {
+    label: 'out(value: any): null',
+    detail: 'Built-in function',
+    documentation: 'Prints a value to stdout without a newline.'
+  },
+  outln: {
+    label: 'outln(value: any): null',
+    detail: 'Built-in function',
+    documentation: 'Prints a value to stdout with a newline. Alias for log().'
   },
   run: {
     label: 'run(cmd: str): str',
     detail: 'Built-in function',
-    documentation: 'Runs a shell command and returns trimmed stdout as a string.'
+    documentation: 'Executes a shell command and returns trimmed stdout as a string.'
   }
 };
 
@@ -28,6 +38,12 @@ const BUILTIN_MODULES = {
     resolve: {
       label: 'net.resolve(hostname: str): str | null',
       documentation: 'Resolves the first IP address for a hostname.'
+    }
+  },
+  udp: {
+    test: {
+      label: 'udp.test(): bool',
+      documentation: 'Test UDP module functionality. Returns true if successful.'
     }
   }
 };
@@ -131,7 +147,7 @@ function activate(context) {
   );
 }
 
-function deactivate() {}
+function deactivate() { }
 
 function buildKeywordCompletions() {
   return KEYWORDS.map((kw) => new vscode.CompletionItem(kw, vscode.CompletionItemKind.Keyword));

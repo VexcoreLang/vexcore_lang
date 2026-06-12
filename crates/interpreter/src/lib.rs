@@ -1,4 +1,5 @@
 use ast::{AssignOp, BinaryOp, Expr, Param, Program, Stmt, TypeAnnotation, UnaryOp, Value};
+use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashMap};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -22,8 +23,8 @@ pub enum RuntimeError {
     ParseError(String),
 }
 
-#[derive(Clone)]
-struct CompiledFunction {
+#[derive(Clone, Serialize, Deserialize)]
+pub struct CompiledFunction {
     params: Vec<Param>,
     ret_type: Option<TypeAnnotation>,
     code: Vec<Instr>,
@@ -68,9 +69,7 @@ impl ScopeFrame {
     }
 
     fn get(&self, name: &str) -> Option<&Value> {
-        self.names
-            .get(name)
-            .and_then(|idx| self.values.get(*idx))
+        self.names.get(name).and_then(|idx| self.values.get(*idx))
     }
 }
 
@@ -80,14 +79,14 @@ struct CachedImport {
     program: Program,
 }
 
-#[derive(Clone)]
-enum InterpPart {
+#[derive(Clone, Serialize, Deserialize)]
+pub enum InterpPart {
     Text(String),
     Var(String),
 }
 
-#[derive(Clone)]
-enum Instr {
+#[derive(Clone, Serialize, Deserialize)]
+pub enum Instr {
     Push(Value),
     LoadVar(String),
     Unary(UnaryOp),
@@ -95,8 +94,16 @@ enum Instr {
     MakeList(usize),
     MakeJson(Vec<String>),
     Interpolate(Vec<InterpPart>),
-    CallFunction { name: String, argc: usize },
+    CallFunction {
+        name: String,
+        argc: usize,
+    },
     CallModule {
+        module: String,
+        function: String,
+        argc: usize,
+    },
+    CallStdModule {
         module: String,
         function: String,
         argc: usize,
@@ -105,7 +112,10 @@ enum Instr {
     Coerce(TypeAnnotation),
     Pop,
     DefineVar(String),
-    AssignVar { name: String, op: AssignOp },
+    AssignVar {
+        name: String,
+        op: AssignOp,
+    },
     DefineFunction {
         name: String,
         function: CompiledFunction,
@@ -132,17 +142,20 @@ enum Instr {
         body: Vec<Instr>,
     },
     Return(Option<Vec<Instr>>),
-    Use(String),
+    Use {
+        path: String,
+        namespace: Option<String>,
+    },
 }
 
-struct Compiler;
+pub struct Compiler;
 
 impl Compiler {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self
     }
 
-    fn compile_program(&mut self, program: &Program) -> Result<Vec<Instr>, RuntimeError> {
+    pub fn compile_program(&mut self, program: &Program) -> Result<Vec<Instr>, RuntimeError> {
         self.compile_stmts(&program.statements)
     }
 
@@ -259,7 +272,10 @@ impl Compiler {
                 };
                 code.push(Instr::Return(compiled));
             }
-            Stmt::Use(path) => code.push(Instr::Use(path.clone())),
+            Stmt::Use { path, namespace } => code.push(Instr::Use {
+                path: path.clone(),
+                namespace: namespace.clone(),
+            }),
             Stmt::Expr(expr) => {
                 self.compile_expr(expr, code)?;
                 code.push(Instr::Pop);
@@ -347,6 +363,20 @@ impl Compiler {
                     argc: args.len(),
                 });
             }
+            Expr::StdModuleCall {
+                module,
+                function,
+                args,
+            } => {
+                for arg in args {
+                    self.compile_expr(arg, code)?;
+                }
+                code.push(Instr::CallStdModule {
+                    module: module.clone(),
+                    function: function.clone(),
+                    argc: args.len(),
+                });
+            }
             Expr::Index { object, index } => {
                 self.compile_expr(object, code)?;
                 self.compile_expr(index, code)?;
@@ -355,22 +385,14 @@ impl Compiler {
         }
         Ok(())
     }
-
 }
 
 pub type BuiltinFn = fn(Vec<Value>) -> Result<Value, StdlibError>;
 pub type ModuleFn = fn(Vec<Value>) -> Result<Value, StdlibError>;
 
-#[derive(Debug, thiserror::Error)]
-pub enum StdlibError {
-    #[error("{0}")]
-    Message(String),
-}
 
-pub struct Stdlib {
-    pub builtins: HashMap<String, BuiltinFn>,
-    pub modules: HashMap<String, HashMap<String, ModuleFn>>,
-}
+
+
 
 impl Stdlib {
     pub fn new() -> Self {
@@ -580,7 +602,7 @@ mod udp {
     }
 
     fn test(_args: Vec<Value>) -> Result<Value, StdlibError> {
-        println!("HEllo udp");
+        panic!("INTERPRETER UDP");
         Ok(Value::Bool(true))
     }
 }
@@ -610,6 +632,15 @@ impl Interpreter {
         let mut compiler = Compiler::new();
         let code = compiler.compile_program(program)?;
         match self.run_code(&code)? {
+            ControlFlow::Continue => Ok(()),
+            ControlFlow::Return(_) => Err(RuntimeError::InvalidOperation(
+                "return outside of function".to_string(),
+            )),
+        }
+    }
+
+    pub fn execute_program_from_bytecode(&mut self, code: &[Instr]) -> Result<(), RuntimeError> {
+        match self.run_code(code)? {
             ControlFlow::Continue => Ok(()),
             ControlFlow::Return(_) => Err(RuntimeError::InvalidOperation(
                 "return outside of function".to_string(),
@@ -672,6 +703,15 @@ impl Interpreter {
                 } => {
                     let args = pop_args(&mut stack, *argc, "module call")?;
                     let value = self.call_module(module, function, args)?;
+                    stack.push(value);
+                }
+                Instr::CallStdModule {
+                    module,
+                    function,
+                    argc,
+                } => {
+                    let args = pop_args(&mut stack, *argc, "std module call")?;
+                    let value = self.call_std_module(module, function, args)?;
                     stack.push(value);
                 }
                 Instr::GetIndex => {
@@ -741,9 +781,7 @@ impl Interpreter {
                                 matched = true;
                                 match self.run_block(elif_body)? {
                                     ControlFlow::Continue => {}
-                                    ControlFlow::Return(v) => {
-                                        return Ok(ControlFlow::Return(v))
-                                    }
+                                    ControlFlow::Return(v) => return Ok(ControlFlow::Return(v)),
                                 }
                                 break;
                             }
@@ -817,8 +855,8 @@ impl Interpreter {
                     };
                     return Ok(ControlFlow::Return(value));
                 }
-                Instr::Use(path) => {
-                    self.run_use(path)?;
+                Instr::Use { path, namespace } => {
+                    self.run_use(path, namespace.as_deref())?;
                 }
             }
         }
@@ -882,6 +920,15 @@ impl Interpreter {
                     let value = self.call_module(module, function, args)?;
                     stack.push(value);
                 }
+                Instr::CallStdModule {
+                    module,
+                    function,
+                    argc,
+                } => {
+                    let args = pop_args(&mut stack, *argc, "std module expression")?;
+                    let value = self.call_std_module(module, function, args)?;
+                    stack.push(value);
+                }
                 Instr::GetIndex => {
                     let idx = pop_value(&mut stack, "indexing")?;
                     let obj = pop_value(&mut stack, "indexing")?;
@@ -907,7 +954,7 @@ impl Interpreter {
                 | Instr::ForRange { .. }
                 | Instr::ForEach { .. }
                 | Instr::Return(_)
-                | Instr::Use(_) => {
+                | Instr::Use { .. } => {
                     return Err(RuntimeError::InvalidOperation(
                         "statement instruction used in expression context".to_string(),
                     ))
@@ -926,13 +973,16 @@ impl Interpreter {
         result
     }
 
-    fn run_use(&mut self, path: &str) -> Result<(), RuntimeError> {
+    fn run_use(&mut self, path: &str, namespace: Option<&str>) -> Result<(), RuntimeError> {
         let full = self.base_dir.join(path);
-        let module_name = module_name_from_path(path).ok_or_else(|| {
-            RuntimeError::ImportError(format!(
-                "cannot derive module name from import path: {path}"
-            ))
-        })?;
+        let module_name = namespace
+            .map(|s| s.to_string())
+            .or_else(|| module_name_from_path(path))
+            .ok_or_else(|| {
+                RuntimeError::ImportError(format!(
+                    "cannot derive module name from import path: {path}"
+                ))
+            })?;
 
         let program = self.load_import_program(&full)?;
 
@@ -1055,6 +1105,17 @@ impl Interpreter {
             .map_err(|e| RuntimeError::ModuleError(e.to_string()))
     }
 
+    fn call_std_module(
+        &mut self,
+        module: &str,
+        function: &str,
+        args: Vec<Value>,
+    ) -> Result<Value, RuntimeError> {
+        self.stdlib
+            .call_module(module, function, args)
+            .map_err(|e| RuntimeError::ModuleError(e.to_string()))
+    }
+
     fn call_user_module_function(
         &mut self,
         module: &str,
@@ -1101,7 +1162,9 @@ impl Interpreter {
                     RuntimeError::InvalidOperation("list index out of bounds".to_string())
                 })
             }
-            (Value::Json(map), Value::Str(key)) => Ok(map.get(key.as_ref()).cloned().unwrap_or(Value::Null)),
+            (Value::Json(map), Value::Str(key)) => {
+                Ok(map.get(key.as_ref()).cloned().unwrap_or(Value::Null))
+            }
             _ => Err(RuntimeError::TypeError(
                 "indexing requires list[int] or json[str]".to_string(),
             )),
@@ -1152,7 +1215,9 @@ impl Interpreter {
             },
             BinaryOp::Mod => match (left, right) {
                 (Value::Int(a), Value::Int(b)) => Ok(Value::Int(a % b)),
-                _ => Err(RuntimeError::TypeError("'%' expects int operands".to_string())),
+                _ => Err(RuntimeError::TypeError(
+                    "'%' expects int operands".to_string(),
+                )),
             },
             BinaryOp::Pow => match (left, right) {
                 (Value::Int(a), Value::Int(b)) => Ok(Value::Int(a.pow(*b as u32))),
@@ -1202,12 +1267,16 @@ enum ControlFlow {
 }
 
 fn pop_value(stack: &mut Vec<Value>, context: &str) -> Result<Value, RuntimeError> {
-    stack.pop().ok_or_else(|| {
-        RuntimeError::InvalidOperation(format!("stack underflow during {context}"))
-    })
+    stack
+        .pop()
+        .ok_or_else(|| RuntimeError::InvalidOperation(format!("stack underflow during {context}")))
 }
 
-fn pop_args(stack: &mut Vec<Value>, argc: usize, context: &str) -> Result<Vec<Value>, RuntimeError> {
+fn pop_args(
+    stack: &mut Vec<Value>,
+    argc: usize,
+    context: &str,
+) -> Result<Vec<Value>, RuntimeError> {
     if stack.len() < argc {
         return Err(RuntimeError::InvalidOperation(format!(
             "stack underflow during {context}"
@@ -1311,4 +1380,17 @@ fn parse_interpolated_parts(raw: &str) -> Vec<InterpPart> {
     }
 
     parts
+}
+/// Сохранить скомпилированный bytecode в файл .vcbc
+pub fn save_bytecode(code: &[Instr], path: &Path) -> Result<(), Box<dyn std::error::Error>> {
+    let json = serde_json::to_string(code)?;
+    std::fs::write(path, json)?;
+    Ok(())
+}
+
+/// Загрузить bytecode из файла .vcbc
+pub fn load_bytecode(path: &Path) -> Result<Vec<Instr>, Box<dyn std::error::Error>> {
+    let json = std::fs::read_to_string(path)?;
+    let code = serde_json::from_str(&json)?;
+    Ok(code)
 }

@@ -74,8 +74,7 @@ impl Value {
             }
             Value::Json(map) => {
                 serde_json::to_string(map.as_ref()).unwrap_or_else(|_| "{}".to_string())
-            }
-            // EXTENSION POINT: add stringification for new Value variants here.
+            } // EXTENSION POINT: add stringification for new Value variants here.
         }
     }
 
@@ -155,18 +154,21 @@ pub enum Stmt {
         body: Vec<Stmt>,
     },
     Return(Option<Expr>),
-    Use(String),
+    Use {
+        path: String,
+        namespace: Option<String>,
+    },
     Expr(Expr),
     // EXTENSION POINT: add new statement variants here.
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Param {
     pub name: String,
     pub annotation: Option<TypeAnnotation>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum AssignOp {
     Assign,
     AddAssign,
@@ -200,13 +202,18 @@ pub enum Expr {
         function: String,
         args: Vec<Expr>,
     },
+    StdModuleCall {
+        module: String,
+        function: String,
+        args: Vec<Expr>,
+    },
     Index {
         object: Box<Expr>,
         index: Box<Expr>,
     },
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum BinaryOp {
     Add,
     Sub,
@@ -225,7 +232,7 @@ pub enum BinaryOp {
     Or,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum UnaryOp {
     Not,
     Neg,

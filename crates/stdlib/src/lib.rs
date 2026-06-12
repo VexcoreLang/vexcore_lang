@@ -2,6 +2,8 @@ use ast::Value;
 use std::collections::HashMap;
 use std::sync::Arc;
 
+pub mod math;
+
 pub type BuiltinFn = fn(Vec<Value>) -> Result<Value, StdlibError>;
 pub type ModuleFn = fn(Vec<Value>) -> Result<Value, StdlibError>;
 
@@ -92,6 +94,7 @@ fn builtin_run(args: Vec<Value>) -> Result<Value, StdlibError> {
     )))
 }
 
+
 fn register_builtins() -> HashMap<String, BuiltinFn> {
     let mut map: HashMap<String, BuiltinFn> = HashMap::new();
     // EXTENSION POINT: add new built-in functions in this single registry.
@@ -107,6 +110,7 @@ fn register_modules() -> HashMap<String, HashMap<String, ModuleFn>> {
     // EXTENSION POINT: register new stdlib modules in this single registry.
     modules.insert("net".to_string(), net::register());
     modules.insert("udp".to_string(), udp::register());
+    modules.insert("math".to_string(), math::register());
     modules
 }
 
@@ -211,7 +215,10 @@ mod net {
     }
 }
 
-mod udp {
+
+
+
+pub mod udp {
     use super::{ModuleFn, StdlibError};
     use ast::Value;
     use std::collections::HashMap;
@@ -223,7 +230,7 @@ mod udp {
     }
 
     fn test(_args: Vec<Value>) -> Result<Value, StdlibError> {
-        println!("HEllo udp");
+        panic!("UDP TEST PANIC");
         Ok(Value::Bool(true))
     }
 }

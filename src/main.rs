@@ -19,6 +19,7 @@ struct Cli {
 }
 
 fn main() {
+    
     let cli = Cli::parse();
 
     if cli.repl {
@@ -33,6 +34,8 @@ fn main() {
         eprintln!("Usage: vexcore <script.vcl> | vexcore --repl [--debug]");
         std::process::exit(2);
     };
+    
+    
 
     let source = match fs::read_to_string(&script_path) {
         Ok(s) => s,
@@ -41,6 +44,7 @@ fn main() {
             std::process::exit(1);
         }
     };
+    
 
     let bytecode_path = script_path.with_extension("vcbc");
     let code = if !cli.no_cache && should_use_cache(&script_path, &bytecode_path) {
@@ -90,6 +94,7 @@ fn compile_script(
     vcbc_path: &PathBuf,
     debug: bool,
 ) -> Vec<interpreter::Instr> {
+    
     let tokens = match lexer::tokenize(source) {
         Ok(t) => t,
         Err(e) => {

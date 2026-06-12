@@ -104,7 +104,7 @@ fn CLAMP(args: Vec<Value>) -> Result<Value, StdlibError> {
             "math.clamp(x, min, max) expects 3 arguments".to_string(),
         ));
     }
-
+    
     let (x, min, max) = (&args[0], &args[1], &args[2]);
 
     match (x, min, max) {

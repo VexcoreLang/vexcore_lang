@@ -1,1 +1,2 @@
-outln("Hello, World!");
+
+outln(std.math.abs(-5));

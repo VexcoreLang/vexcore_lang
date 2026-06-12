@@ -394,59 +394,6 @@ pub type BuiltinFn = fn(Vec<Value>) -> Result<Value, StdlibError>;
 pub type ModuleFn = fn(Vec<Value>) -> Result<Value, StdlibError>;
 
 
-fn builtin_out(args: Vec<Value>) -> Result<Value, StdlibError> {
-    if let Some(v) = args.first() {
-        print!("{}", v.to_pretty_string());
-    } else {
-        print!("");
-    }
-    Ok(Value::Null)
-}
-
-fn builtin_outln(args: Vec<Value>) -> Result<Value, StdlibError> {
-    if let Some(v) = args.first() {
-        println!("{}", v.to_pretty_string());
-    } else {
-        println!();
-    }
-    Ok(Value::Null)
-}
-
-fn builtin_run(args: Vec<Value>) -> Result<Value, StdlibError> {
-    let cmd = match args.first() {
-        Some(Value::Str(s)) => s,
-        _ => {
-            return Err(StdlibError::Message(
-                "run(cmd) expects a single string argument".to_string(),
-            ))
-        }
-    };
-
-    let output = if cfg!(target_os = "windows") {
-        std::process::Command::new("cmd")
-            .arg("/C")
-            .arg(cmd.as_ref())
-            .output()
-    } else {
-        std::process::Command::new("sh")
-            .arg("-c")
-            .arg(cmd.as_ref())
-            .output()
-    }
-    .map_err(|e| StdlibError::Message(format!("run failed: {e}")))?;
-
-    Ok(Value::Str(Arc::from(
-        String::from_utf8_lossy(&output.stdout).trim().to_string(),
-    )))
-}
-
-
-
-
-
-
-
-
 pub struct Interpreter {
     scopes: Vec<ScopeFrame>,
     functions: HashMap<String, CompiledFunction>,

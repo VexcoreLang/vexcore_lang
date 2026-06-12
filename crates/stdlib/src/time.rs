@@ -10,8 +10,6 @@ pub fn register() -> HashMap<String, ModuleFn> {
     map
 }
 
-
-
 fn WAIT(args: Vec<Value>) -> Result<Value, StdlibError> {
     if args.len() != 1 {
         return Err(StdlibError::Message(

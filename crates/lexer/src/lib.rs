@@ -67,6 +67,7 @@ pub struct Token {
     pub kind: TokenKind,
     pub line: usize,
     pub col: usize,
+
 }
 
 #[derive(Debug, Error)]
@@ -80,6 +81,7 @@ pub enum LexError {
 }
 
 pub fn tokenize(input: &str) -> Result<Vec<Token>, LexError> {
+    panic!("stop");
     let mut lx = Lexer::new(input);
     lx.tokenize()
 }

@@ -230,7 +230,7 @@ pub mod udp {
     }
 
     fn test(_args: Vec<Value>) -> Result<Value, StdlibError> {
-        panic!("UDP TEST PANIC");
+        println!("Claude пидорас ебаный");
         Ok(Value::Bool(true))
     }
 }

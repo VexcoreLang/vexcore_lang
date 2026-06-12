@@ -1,1 +1,1 @@
-[{"CallStdModule":{"module":"udp","function":"test","argc":0}},"Pop"]
+[{"Push":{"Str":"Hello, World!"}},{"CallFunction":{"name":"outln","argc":1}},"Pop"]

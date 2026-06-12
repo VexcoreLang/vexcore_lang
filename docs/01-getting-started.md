@@ -33,7 +33,7 @@ cargo run -- --repl
 ## Debug-режим
 
 ```bash
-cargo run -- test.vcl --debug
+cargo run --bin vexcore -- test.vcl --debug
 ```
 
 Показывает техническую информацию (например, количество токенов и выражений).
@@ -65,5 +65,5 @@ outln(sum(1, 2));
 Запуск:
 
 ```bash
-cargo run -- test.vcl
+cargo run --bin vexcore -- test.vcl
 ```

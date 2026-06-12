@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 pub mod math;
+pub mod time;
 
 pub type BuiltinFn = fn(Vec<Value>) -> Result<Value, StdlibError>;
 pub type ModuleFn = fn(Vec<Value>) -> Result<Value, StdlibError>;
@@ -111,6 +112,7 @@ fn register_modules() -> HashMap<String, HashMap<String, ModuleFn>> {
     modules.insert("net".to_string(), net::register());
     modules.insert("udp".to_string(), udp::register());
     modules.insert("math".to_string(), math::register());
+    modules.insert("time".to_string(), time::register());
     modules
 }
 

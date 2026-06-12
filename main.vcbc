@@ -1,1 +1,0 @@
-[{"Push":{"Str":"Hello, World!"}},{"CallFunction":{"name":"outln","argc":1}},"Pop"]

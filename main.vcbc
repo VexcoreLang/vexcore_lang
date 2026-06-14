@@ -1,0 +1,1 @@
+[{"Push":{"Int":5}},{"Unary":"Neg"},{"CallStdModule":{"module":"math","function":"abs","argc":1}},{"CallFunction":{"name":"outln","argc":1}},"Pop"]

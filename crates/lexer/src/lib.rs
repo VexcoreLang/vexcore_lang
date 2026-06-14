@@ -81,7 +81,6 @@ pub enum LexError {
 }
 
 pub fn tokenize(input: &str) -> Result<Vec<Token>, LexError> {
-    panic!("stop");
     let mut lx = Lexer::new(input);
     lx.tokenize()
 }

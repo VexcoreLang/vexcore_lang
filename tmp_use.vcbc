@@ -1,0 +1,28 @@
+{
+  "code": [
+    {
+      "Use": {
+        "path": "test.vcl",
+        "namespace": null
+      }
+    },
+    {
+      "Const": {
+        "Int": 41
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "test",
+        "argc": 1
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop"
+  ]
+}

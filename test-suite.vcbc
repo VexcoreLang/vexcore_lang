@@ -1,0 +1,1118 @@
+{
+  "code": [
+    {
+      "Const": {
+        "Str": "== literals =="
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Int": 123
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Float": 3.5
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Bool": true
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": "Null"
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Str": "== arithmetic =="
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Int": 1
+      }
+    },
+    {
+      "Const": {
+        "Int": 2
+      }
+    },
+    {
+      "Const": {
+        "Int": 3
+      }
+    },
+    {
+      "Binary": "Mul"
+    },
+    {
+      "Binary": "Add"
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Int": 10
+      }
+    },
+    {
+      "Const": {
+        "Int": 2
+      }
+    },
+    {
+      "Binary": "Div"
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Int": 7
+      }
+    },
+    {
+      "Const": {
+        "Int": 4
+      }
+    },
+    {
+      "Binary": "Mod"
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Int": 2
+      }
+    },
+    {
+      "Const": {
+        "Int": 5
+      }
+    },
+    {
+      "Binary": "Pow"
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Int": 5
+      }
+    },
+    {
+      "Unary": "Neg"
+    },
+    {
+      "Const": {
+        "Int": 8
+      }
+    },
+    {
+      "Binary": "Add"
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Str": "== variables =="
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Int": 10
+      }
+    },
+    {
+      "StoreLocal": "x"
+    },
+    {
+      "Const": {
+        "Int": 5
+      }
+    },
+    {
+      "UpdateLocal": {
+        "name": "x",
+        "op": "AddAssign"
+      }
+    },
+    {
+      "Const": {
+        "Int": 2
+      }
+    },
+    {
+      "UpdateLocal": {
+        "name": "x",
+        "op": "SubAssign"
+      }
+    },
+    {
+      "Const": {
+        "Int": 3
+      }
+    },
+    {
+      "UpdateLocal": {
+        "name": "x",
+        "op": "MulAssign"
+      }
+    },
+    {
+      "Const": {
+        "Int": 2
+      }
+    },
+    {
+      "UpdateLocal": {
+        "name": "x",
+        "op": "DivAssign"
+      }
+    },
+    {
+      "LoadLocal": "x"
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Str": "== functions =="
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "DefineFunction": {
+        "name": "inc",
+        "function": {
+          "params": [
+            {
+              "name": "a",
+              "annotation": "Int"
+            }
+          ],
+          "ret_type": "Int",
+          "chunk": {
+            "code": [
+              {
+                "Return": {
+                  "code": [
+                    {
+                      "LoadLocal": "a"
+                    },
+                    {
+                      "Const": {
+                        "Int": 1
+                      }
+                    },
+                    {
+                      "Binary": "Add"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "DefineFunction": {
+        "name": "add",
+        "function": {
+          "params": [
+            {
+              "name": "a",
+              "annotation": "Int"
+            },
+            {
+              "name": "b",
+              "annotation": "Int"
+            }
+          ],
+          "ret_type": "Int",
+          "chunk": {
+            "code": [
+              {
+                "Return": {
+                  "code": [
+                    {
+                      "LoadLocal": "a"
+                    },
+                    {
+                      "LoadLocal": "b"
+                    },
+                    {
+                      "Binary": "Add"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "Const": {
+        "Int": 41
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "inc",
+        "argc": 1
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Int": 2
+      }
+    },
+    {
+      "Const": {
+        "Int": 3
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "add",
+        "argc": 2
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Str": "== conditionals =="
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "If": {
+        "cond": {
+          "code": [
+            {
+              "Const": {
+                "Bool": true
+              }
+            }
+          ]
+        },
+        "then_body": {
+          "code": [
+            {
+              "Const": {
+                "Str": "if-true"
+              }
+            },
+            {
+              "CallLocal": {
+                "name": "outln",
+                "argc": 1
+              }
+            },
+            "Pop"
+          ]
+        },
+        "elifs": [],
+        "else_body": {
+          "code": [
+            {
+              "Const": {
+                "Str": "if-false"
+              }
+            },
+            {
+              "CallLocal": {
+                "name": "outln",
+                "argc": 1
+              }
+            },
+            "Pop"
+          ]
+        }
+      }
+    },
+    {
+      "If": {
+        "cond": {
+          "code": [
+            {
+              "Const": {
+                "Bool": false
+              }
+            }
+          ]
+        },
+        "then_body": {
+          "code": [
+            {
+              "Const": {
+                "Str": "if-no"
+              }
+            },
+            {
+              "CallLocal": {
+                "name": "outln",
+                "argc": 1
+              }
+            },
+            "Pop"
+          ]
+        },
+        "elifs": [],
+        "else_body": {
+          "code": [
+            {
+              "Const": {
+                "Str": "if-yes"
+              }
+            },
+            {
+              "CallLocal": {
+                "name": "outln",
+                "argc": 1
+              }
+            },
+            "Pop"
+          ]
+        }
+      }
+    },
+    {
+      "Const": {
+        "Str": "== loops =="
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Int": 0
+      }
+    },
+    {
+      "StoreLocal": "w"
+    },
+    {
+      "While": {
+        "cond": {
+          "code": [
+            {
+              "LoadLocal": "w"
+            },
+            {
+              "Const": {
+                "Int": 3
+              }
+            },
+            {
+              "Binary": "Lt"
+            }
+          ]
+        },
+        "body": {
+          "code": [
+            {
+              "Const": {
+                "Int": 1
+              }
+            },
+            {
+              "UpdateLocal": {
+                "name": "w",
+                "op": "AddAssign"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "LoadLocal": "w"
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Int": 0
+      }
+    },
+    {
+      "StoreLocal": "sum"
+    },
+    {
+      "ForRange": {
+        "start": {
+          "code": [
+            {
+              "Const": {
+                "Int": 0
+              }
+            }
+          ]
+        },
+        "end": {
+          "code": [
+            {
+              "Const": {
+                "Int": 4
+              }
+            }
+          ]
+        },
+        "var": "i",
+        "body": {
+          "code": [
+            {
+              "LoadLocal": "i"
+            },
+            {
+              "UpdateLocal": {
+                "name": "sum",
+                "op": "AddAssign"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "LoadLocal": "sum"
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Str": "== collections =="
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Int": 1
+      }
+    },
+    {
+      "Const": {
+        "Int": 2
+      }
+    },
+    {
+      "Const": {
+        "Int": 3
+      }
+    },
+    {
+      "BuildList": 3
+    },
+    {
+      "StoreLocal": "xs"
+    },
+    {
+      "Const": {
+        "Int": 1
+      }
+    },
+    {
+      "Const": {
+        "Int": 2
+      }
+    },
+    {
+      "BuildMap": [
+        "a",
+        "b"
+      ]
+    },
+    {
+      "StoreLocal": "obj"
+    },
+    {
+      "LoadLocal": "xs"
+    },
+    {
+      "Const": {
+        "Int": 1
+      }
+    },
+    "IndexGet",
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "LoadLocal": "obj"
+    },
+    {
+      "Const": {
+        "Str": "b"
+      }
+    },
+    "IndexGet",
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "LoadLocal": "xs"
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "LoadLocal": "obj"
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Str": "== strings =="
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Str": "Vexcore"
+      }
+    },
+    {
+      "StoreLocal": "name"
+    },
+    {
+      "Interpolate": [
+        {
+          "Text": "Hello "
+        },
+        {
+          "Var": "name"
+        }
+      ]
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Interpolate": [
+        {
+          "Var": "name"
+        },
+        {
+          "Text": " works"
+        }
+      ]
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Str": "== stdlib =="
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Int": 3
+      }
+    },
+    {
+      "Unary": "Neg"
+    },
+    {
+      "CallModule": {
+        "module": "math",
+        "function": "abs",
+        "argc": 1
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Int": 2
+      }
+    },
+    {
+      "Const": {
+        "Int": 5
+      }
+    },
+    {
+      "CallModule": {
+        "module": "math",
+        "function": "min",
+        "argc": 2
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Int": 2
+      }
+    },
+    {
+      "Const": {
+        "Int": 5
+      }
+    },
+    {
+      "CallModule": {
+        "module": "math",
+        "function": "max",
+        "argc": 2
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Int": 15
+      }
+    },
+    {
+      "Const": {
+        "Int": 0
+      }
+    },
+    {
+      "Const": {
+        "Int": 10
+      }
+    },
+    {
+      "CallModule": {
+        "module": "math",
+        "function": "clamp",
+        "argc": 3
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Int": 2
+      }
+    },
+    {
+      "Const": {
+        "Int": 5
+      }
+    },
+    {
+      "CallModule": {
+        "module": "math",
+        "function": "pow",
+        "argc": 2
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Int": 9
+      }
+    },
+    {
+      "CallModule": {
+        "module": "math",
+        "function": "sqrt",
+        "argc": 1
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Float": 3.9
+      }
+    },
+    {
+      "CallModule": {
+        "module": "math",
+        "function": "floor",
+        "argc": 1
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Float": 3.1
+      }
+    },
+    {
+      "CallModule": {
+        "module": "math",
+        "function": "ceil",
+        "argc": 1
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Float": 3.6
+      }
+    },
+    {
+      "CallModule": {
+        "module": "math",
+        "function": "round",
+        "argc": 1
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Float": 3.9
+      }
+    },
+    {
+      "CallModule": {
+        "module": "math",
+        "function": "trunc",
+        "argc": 1
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Int": 0
+      }
+    },
+    {
+      "CallModule": {
+        "module": "math",
+        "function": "sin",
+        "argc": 1
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Int": 0
+      }
+    },
+    {
+      "CallModule": {
+        "module": "math",
+        "function": "cos",
+        "argc": 1
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Int": 0
+      }
+    },
+    {
+      "CallModule": {
+        "module": "math",
+        "function": "tan",
+        "argc": 1
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Int": 0
+      }
+    },
+    {
+      "CallModule": {
+        "module": "time",
+        "function": "wait",
+        "argc": 1
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Str": "== import =="
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Use": {
+        "path": "test.vcl",
+        "namespace": null
+      }
+    },
+    {
+      "Const": {
+        "Int": 41
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "test",
+        "argc": 1
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "Const": {
+        "Str": "== done =="
+      }
+    },
+    {
+      "CallLocal": {
+        "name": "outln",
+        "argc": 1
+      }
+    },
+    "Pop"
+  ]
+}

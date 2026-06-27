@@ -1,1 +1,62 @@
-[{"Push":{"Int":5}},{"Unary":"Neg"},{"CallStdModule":{"module":"math","function":"abs","argc":1}},{"CallFunction":{"name":"outln","argc":1}},"Pop"]
+{
+  "code": [
+    {
+      "Use": {
+        "path": "test.vcl",
+        "namespace": null
+      }
+    },
+    {
+      "DefineFunction": {
+        "name": "test2",
+        "function": {
+          "params": [],
+          "ret_type": null,
+          "chunk": {
+            "code": [
+              {
+                "Const": {
+                  "Str": "Daun"
+                }
+              },
+              {
+                "CallLocal": {
+                  "name": "outln",
+                  "argc": 1
+                }
+              },
+              "Pop"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "Const": {
+        "Int": 1
+      }
+    },
+    {
+      "CallModule": {
+        "module": "test",
+        "function": "test",
+        "argc": 1
+      }
+    },
+    {
+      "CallModule": {
+        "module": "math",
+        "function": "outln",
+        "argc": 1
+      }
+    },
+    "Pop",
+    {
+      "CallLocal": {
+        "name": "test2",
+        "argc": 0
+      }
+    },
+    "Pop"
+  ]
+}

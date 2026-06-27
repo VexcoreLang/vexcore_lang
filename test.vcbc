@@ -1,0 +1,33 @@
+[
+  {
+    "DefineFunction": {
+      "name": "test",
+      "function": {
+        "params": [
+          {
+            "name": "a",
+            "annotation": "Int"
+          }
+        ],
+        "ret_type": "Int",
+        "code": [
+          {
+            "Return": [
+              {
+                "LoadVar": "a"
+              },
+              {
+                "Push": {
+                  "Int": 1
+                }
+              },
+              {
+                "Binary": "Add"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+]

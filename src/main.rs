@@ -1,6 +1,8 @@
 use clap::Parser;
 use std::fs;
 use std::path::PathBuf;
+use vexcore::bytecode_translator;
+use vexcore::vm::Vm;
 
 #[derive(Debug, Parser)]
 #[command(
@@ -11,8 +13,6 @@ use std::path::PathBuf;
 struct Cli {
     script: Option<PathBuf>,
     #[arg(long)]
-    repl: bool,
-    #[arg(long)]
     debug: bool,
     #[arg(long)]
     no_cache: bool,
@@ -22,16 +22,8 @@ fn main() {
     
     let cli = Cli::parse();
 
-    if cli.repl {
-        if let Err(e) = repl::run_repl(cli.debug) {
-            eprintln!("REPL error: {e}");
-            std::process::exit(1);
-        }
-        return;
-    }
-
     let Some(script_path) = cli.script else {
-        eprintln!("Usage: vexcore <script.vcl> | vexcore --repl [--debug]");
+        eprintln!("Usage: vexcore <script.vcl> [--debug] [--no-cache]");
         std::process::exit(2);
     };
     
@@ -51,7 +43,7 @@ fn main() {
         if cli.debug {
             eprintln!("[debug] loading from cache: {}", bytecode_path.display());
         }
-        match interpreter::load_bytecode(&bytecode_path) {
+        match bytecode_translator::load_bytecode(&bytecode_path) {
             Ok(c) => c,
             Err(e) => {
                 if cli.debug {
@@ -68,8 +60,8 @@ fn main() {
         .parent()
         .map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from("."));
-    let mut interp = interpreter::Interpreter::new(base_dir);
-    if let Err(e) = interp.execute_program_from_bytecode(&code) {
+    let mut vm = Vm::new(base_dir);
+    if let Err(e) = vm.run_bytecode(&code) {
         eprintln!("Runtime error: {e}");
         std::process::exit(1);
     }
@@ -93,7 +85,7 @@ fn compile_script(
     _vcl_path: &PathBuf,
     vcbc_path: &PathBuf,
     debug: bool,
-) -> Vec<interpreter::Instr> {
+) -> vexcore::bytecode::Bytecode {
     
     let tokens = match lexer::tokenize(source) {
         Ok(t) => t,
@@ -119,8 +111,8 @@ fn compile_script(
         eprintln!("[debug] statements: {}", program.statements.len());
     }
 
-    let mut compiler = interpreter::Compiler::new();
-    let code = match compiler.compile_program(&program) {
+    let mut translator = bytecode_translator::BytecodeTranslator::new();
+    let code = match translator.translate_program(&program) {
         Ok(c) => c,
         Err(e) => {
             eprintln!("Compile error: {e}");
@@ -128,8 +120,7 @@ fn compile_script(
         }
     };
 
-    // Сохраняем кэш
-    let _ = interpreter::save_bytecode(&code, vcbc_path);
+    let _ = bytecode_translator::save_bytecode(&code, vcbc_path);
 
     code
 }
